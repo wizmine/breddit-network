@@ -1,7 +1,3 @@
-// import { Button } from "antd";
-// import Link from "next/link";
-// import { useAuth } from "@/hooks/auth/useAuth";
-
 import { Link } from "react-router-dom";
 import Button from "../shared/Button";
 import LogoutButton from "../button/LogoutButton";
@@ -15,6 +11,9 @@ const NavBar = () => {
     <Nav>
       {user ? (
         <>
+          <Link to={`/article-create`} style={{ marginRight: "10px" }}>
+            <Button custom="primary" text="Create" />
+          </Link>
           <Link to={`/chat`} style={{ marginRight: "10px" }}>
             <Button custom="primary" text="Chat" />
           </Link>

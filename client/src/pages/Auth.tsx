@@ -1,10 +1,10 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Navigate } from "react-router-dom";
-import { IAuthForm } from "../types/auth.types";
-import Button from "../components/shared/Button";
 import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
 import { authMain } from "../redux/slices/auth";
+import { IAuthForm } from "../types/auth.types";
+import Button from "../components/shared/Button";
 
 const Auth = () => {
   const dispatch = useAppDispatch();

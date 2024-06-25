@@ -5,45 +5,60 @@ import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
 import { useConnectSocket } from "../hooks/useConnectSocket";
 import { createChat } from "../redux/slices/auth";
 import { Navigate } from "react-router-dom";
+import { IAuthor } from "../types/auth.types";
+import Spinner from "../components/shared/Spinner";
 
 const Chat = () => {
   const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
   const { users } = useAppSelector((state) => state.users);
   const [activeChat, setActiveChat] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState<IAuthor[]>([]);
   const chats = user?.chats;
   useConnectSocket();
 
-  if (loading) return <ChatContainer>Loading...</ChatContainer>;
+  if (loading) return <Spinner />;
   if (!user) return <Navigate to="/" />;
 
-  const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSelectedUser(value);
+    setSearchTerm(value);
+    if (users) {
+      setSuggestions(
+        users.filter(
+          (item) => item.id !== user.id && item.name.toLowerCase().includes(value.toLowerCase())
+        )
+      );
+    }
+  };
+
+  const onSelectUser = (userId: string) => {
+    setSearchTerm("");
+    setSuggestions([]);
     const data = {
       firstUser: user.id,
-      secondUser: value,
+      secondUser: userId,
     };
     dispatch(createChat(data));
   };
-
-  const filteredUsers = users?.filter((item) => item.id !== user.id);
 
   return (
     <ChatContainer>
       <Tabs>
         <TabList>
-          <Select value={selectedUser || ""} onChange={onChange}>
-            <option value="" disabled>
-              Select a user
-            </option>
-            {filteredUsers?.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </Select>
+          <SearchContainer>
+            <Input placeholder="Search for a user..." value={searchTerm} onChange={onChange} />
+            {searchTerm && suggestions.length > 0 && (
+              <SuggestionsList>
+                {suggestions.map((item) => (
+                  <SuggestionItem key={item.id} onClick={() => onSelectUser(item.id)}>
+                    {item.name}
+                  </SuggestionItem>
+                ))}
+              </SuggestionsList>
+            )}
+          </SearchContainer>
           {chats?.map((chat) => {
             const secondUser = chat.participants.find((item) => item.id !== user?.id);
             return (
@@ -80,7 +95,11 @@ const ChatContainer = styled.div`
   display: block;
 `;
 
-const Select = styled.select`
+const SearchContainer = styled.div`
+  position: relative;
+`;
+
+const Input = styled.input`
   width: 100%;
   padding: 8px;
   border: 1px solid ${({ theme }) => theme.content};
@@ -89,6 +108,24 @@ const Select = styled.select`
     border-color: ${({ theme }) => theme.content};
     outline: none;
   }
+`;
+
+const SuggestionsList = styled.ul`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: ${({ theme }) => theme.background};
+  border: 1px solid ${({ theme }) => theme.content};
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+`;
+
+const SuggestionItem = styled.li`
+  padding: 8px;
+  cursor: pointer;
+  background-color: ${({ theme }) => theme.content};
 `;
 
 const Tabs = styled.div`

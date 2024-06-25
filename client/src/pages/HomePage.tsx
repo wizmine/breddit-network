@@ -1,31 +1,44 @@
-import { useState } from "react";
-import styled from "styled-components";
-import CreateArticle from "../components/article/CreateArticle";
-import ArticleScreen from "../components/article/ArticleScreen";
+import { useState, useMemo, ChangeEvent } from "react";
 import { useAppSelector } from "../hooks/useRedux";
+import debounce from "lodash/debounce";
+import styled from "styled-components";
+import Spinner from "../components/shared/Spinner";
+import ArticleScreen from "../components/article/ArticleScreen";
 
 const HomePage = () => {
   const { articles, loading } = useAppSelector((state) => state.articles);
   const [searchArticle, setSearchArticle] = useState("");
 
-  const filteredArticles = articles?.filter((article) =>
-    article.content.toLowerCase().includes(searchArticle.toLowerCase())
+  const debouncedSetSearchArticle = useMemo(
+    () => debounce((value: string) => setSearchArticle(value), 300),
+    []
   );
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    debouncedSetSearchArticle(e.target.value);
+  };
+
+  const filteredArticles = useMemo(
+    () =>
+      articles?.filter((article) =>
+        article.content.toLowerCase().includes(searchArticle.toLowerCase())
+      ),
+    [articles, searchArticle]
+  );
+
+  if (loading)
+    return (
+      <Container>
+        <Spinner />
+      </Container>
+    );
 
   return (
     <Container>
-      <CreateArticle />
-      <Input
-        type="text"
-        placeholder="Search article..."
-        value={searchArticle}
-        onChange={(e) => setSearchArticle(e.target.value)}
-      />
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <List>
-          {filteredArticles.map((item) => (
+      <Input type="text" placeholder="Search article..." onChange={handleSearchChange} />
+      <List>
+        {filteredArticles.length !== 0 ? (
+          filteredArticles.map((item) => (
             <ArticleScreen
               authorId={item.author.id}
               id={item.id}
@@ -35,9 +48,11 @@ const HomePage = () => {
               likes={item.likes}
               key={item.id}
             />
-          ))}
-        </List>
-      )}
+          ))
+        ) : (
+          <NothingFound>nothing found</NothingFound>
+        )}
+      </List>
     </Container>
   );
 };
@@ -71,4 +86,10 @@ const List = styled.ul`
   width: 700px;
   list-style: none;
   padding: 0;
+`;
+
+const NothingFound = styled.p`
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
 `;

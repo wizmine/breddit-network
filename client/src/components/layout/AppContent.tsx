@@ -3,6 +3,7 @@ import styled from "styled-components";
 import HomePage from "../../pages/HomePage";
 import Auth from "../../pages/Auth";
 import Chat from "../../pages/Chat";
+import AddArticle from "../../pages/AddArticle";
 import UserProfile from "../../pages/UserProfile";
 
 const AppContent = () => {
@@ -12,6 +13,7 @@ const AppContent = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/article-create" element={<AddArticle />} />
         <Route path="/profile/:id" element={<UserProfile />} />
       </Routes>
     </Main>

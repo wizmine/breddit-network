@@ -4,7 +4,12 @@ import Button from "../shared/Button";
 import { useAppDispatch, useAppSelector } from "../../hooks/useRedux";
 import { createArticle } from "../../redux/slices/articles";
 
-const CreateArticle = () => {
+type Props = {
+  isCreated: boolean;
+  setCreated: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const CreateArticle = ({ isCreated, setCreated }: Props) => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const [newArticle, setNewArticle] = useState("");
@@ -14,6 +19,7 @@ const CreateArticle = () => {
 
     dispatch(createArticle({ content: newArticle }));
     setNewArticle("");
+    setCreated(!isCreated);
   };
 
   if (!user) return <></>;
@@ -21,7 +27,7 @@ const CreateArticle = () => {
   return (
     <Space>
       <Input
-        placeholder="Create article..." 
+        placeholder="Create article..."
         value={newArticle}
         onChange={(e) => setNewArticle(e.target.value)}
       />
